@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paymaster
+  labels:
+    app: paymaster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: paymaster
+  template:
+    metadata:
+      labels:
+        app: paymaster
+    spec:
+      containers:
+        - name: paymaster
+          image: ghcr.io/membership-console/paymaster:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: POSTGRES_URL
+              value: jdbc:postgresql://localhost:5432/paymaster
+            - name: POSTGRES_USERNAME
+              value: paymaster
+            - name: POSTGRES_PASSWORD
+              value: paymaster
+        - name: postgres
+          image: postgres:13
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: paymaster
+            - name: POSTGRES_PASSWORD
+              value: paymaster
+            - name: POSTGRES_DATABASE
+              value: paymaster
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: paymaster
+  labels:
+    app: paymaster
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: paymaster
+
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: reminder-mysql
+  labels:
+    app: reminder
+spec:
+  type: NodePort
+  ports:
+    - port: 5432
+      targetPort: 5432
+      nodePort: 31001
+      protocol: TCP
+  selector:
+    app: reminder
