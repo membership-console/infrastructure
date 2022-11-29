@@ -56,3 +56,21 @@ spec:
       protocol: TCP
   selector:
     app: iam
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: iam-mysql
+  labels:
+    app: iam
+spec:
+  type: NodePort
+  ports:
+    - port: 3306
+      targetPort: 3306
+      nodePort: 31000
+      protocol: TCP
+  selector:
+    app: iam
