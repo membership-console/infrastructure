@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reminder
+  labels:
+    app: reminder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reminder
+  template:
+    metadata:
+      labels:
+        app: reminder
+    spec:
+      containers:
+        - name: reminder
+          image: ghcr.io/membership-console/reminder:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MYSQL_URL
+              value: jdbc:mysql://localhost:3306/reminder?useSSL=false&allowPublicKeyRetrieval=true&enabledTLSProtocols=TLSv1.2
+            - name: MYSQL_USERNAME
+              value: reminder
+            - name: MYSQL_PASSWORD
+              value: reminder
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              value: reminder
+            - name: MYSQL_USER
+              value: reminder
+            - name: MYSQL_PASSWORD
+              value: reminder
+            - name: MYSQL_ROOT_PASSWORD
+              value: reminder
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: reminder
+  labels:
+    app: reminder
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: reminder

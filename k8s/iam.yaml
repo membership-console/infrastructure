@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iam
+  labels:
+    app: iam
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iam
+  template:
+    metadata:
+      labels:
+        app: iam
+    spec:
+      containers:
+        - name: iam
+          image: ghcr.io/membership-console/iam:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MYSQL_URL
+              value: jdbc:mysql://localhost:3306/iam?useSSL=false&allowPublicKeyRetrieval=true&enabledTLSProtocols=TLSv1.2
+            - name: MYSQL_USERNAME
+              value: iam
+            - name: MYSQL_PASSWORD
+              value: iam
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              value: iam
+            - name: MYSQL_USER
+              value: iam
+            - name: MYSQL_PASSWORD
+              value: iam
+            - name: MYSQL_ROOT_PASSWORD
+              value: iam
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: iam
+  labels:
+    app: iam
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: iam
